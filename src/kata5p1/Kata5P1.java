@@ -1,12 +1,26 @@
 package kata5p1;
 
+import java.io.IOException;
 import java.sql.*;
+import java.util.List;
 
 public class Kata5P1 {
     public static void main(String[] args) {
         Connection connection = connect();
         selectAll(connection);
         createNewTable(connection);
+
+        MailListReader mailListReader = new MailListReader();
+        List<String> mailList = null;
+        try {
+            mailList = mailListReader.read("email.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        for(String mail : mailList) {
+            insert(connection, mail);
+        }
     }
 
     private static Connection connect() {
@@ -48,6 +62,16 @@ public class Kata5P1 {
             statement.execute(sql);
             System.out.println("Table created");
         } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static void insert(Connection connection, String email) {
+        String sqlSentence = "INSERT INTO EMAIL(Mail) VALUES(?)";
+        try(PreparedStatement preparedStatement = connection.prepareStatement(sqlSentence)) {
+            preparedStatement.setString(1, email);
+            preparedStatement.executeUpdate();
+        } catch(SQLException e) {
             System.out.println(e.getMessage());
         }
     }
